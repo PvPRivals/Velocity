@@ -111,7 +111,7 @@ public class VelocityRegisteredServer implements RegisteredServer, ForwardingAud
       throw new IllegalStateException("No Velocity proxy instance available");
     }
     CompletableFuture<ServerPing> pingFuture = new CompletableFuture<>();
-    server.createBootstrap(loop).handler(new ChannelInitializer<>() {
+    server.createBootstrap(loop, serverInfo.getAddress()).handler(new ChannelInitializer<>() {
       @Override
       protected void initChannel(Channel ch) {
         ch.pipeline().addLast(FRAME_DECODER, new MinecraftVarintFrameDecoder(ProtocolUtils.Direction.CLIENTBOUND))

@@ -9,6 +9,7 @@ package com.velocitypowered.api.proxy.server;
 
 import com.google.common.base.Preconditions;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -19,7 +20,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public final class ServerInfo implements Comparable<ServerInfo> {
 
   private final String name;
-  private final InetSocketAddress address;
+  private final SocketAddress address;
 
   /**
    * Creates a new ServerInfo object.
@@ -32,11 +33,22 @@ public final class ServerInfo implements Comparable<ServerInfo> {
     this.address = Preconditions.checkNotNull(address, "address");
   }
 
+  /**
+   * Creates a new ServerInfo object.
+   *
+   * @param name the name for the server
+   * @param address the address of the server to connect to
+   */
+  public ServerInfo(String name, SocketAddress address) {
+    this.name = Preconditions.checkNotNull(name, "name");
+    this.address = Preconditions.checkNotNull(address, "address");
+  }
+
   public final String getName() {
     return name;
   }
 
-  public final InetSocketAddress getAddress() {
+  public final SocketAddress getAddress() {
     return address;
   }
 
