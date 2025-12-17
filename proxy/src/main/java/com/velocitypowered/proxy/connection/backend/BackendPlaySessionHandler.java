@@ -63,6 +63,7 @@ import com.velocitypowered.proxy.protocol.packet.RemoveResourcePackPacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackRequestPacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.ServerDataPacket;
+import com.velocitypowered.proxy.protocol.packet.ServerPingPacket;
 import com.velocitypowered.proxy.protocol.packet.TabCompleteResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.TransferPacket;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
@@ -433,6 +434,12 @@ public class BackendPlaySessionHandler implements MinecraftSessionHandler {
         }, playerConnection.eventLoop());
 
     return true;
+  }
+
+  @Override
+  public boolean handle(ServerPingPacket packet) {
+    playerSessionHandler.handleClientBoundPing(packet.getAction());
+    return false;
   }
 
   @Override
