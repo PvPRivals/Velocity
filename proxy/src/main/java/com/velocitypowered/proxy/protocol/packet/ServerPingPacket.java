@@ -32,7 +32,7 @@ public class ServerPingPacket implements MinecraftPacket {
   public ServerPingPacket() {
   }
 
-  public ServerPingPacket(byte windowId, short action, boolean accepted) {
+  public ServerPingPacket(byte windowId, int action, boolean accepted) {
     this.windowId = windowId;
     this.action = action;
     this.accepted = accepted;
