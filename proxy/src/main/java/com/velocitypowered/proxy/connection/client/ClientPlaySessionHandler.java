@@ -48,6 +48,7 @@ import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
 import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.RespawnPacket;
+import com.velocitypowered.proxy.protocol.packet.ServerPingPacket;
 import com.velocitypowered.proxy.protocol.packet.ServerboundCookieResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.TabCompleteRequestPacket;
 import com.velocitypowered.proxy.protocol.packet.TabCompleteResponsePacket;
@@ -103,6 +104,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
 
   private final ConnectedPlayer player;
   private boolean spawned = false;
+  private boolean fullySwitched = true;
   private final List<UUID> serverBossBars = new ArrayList<>();
   private final Queue<PluginMessagePacket> loginPluginMessages = new ConcurrentLinkedQueue<>();
   private final VelocityServer server;
@@ -176,6 +178,24 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
     for (PluginMessagePacket message : loginPluginMessages) {
       ReferenceCountUtil.release(message);
     }
+  }
+
+  @Override
+  public boolean beforeHandle(Object msg) {
+    // Do not leak packet responses that were directed at the previous server
+    return !fullySwitched && !(msg instanceof ServerPingPacket);
+  }
+
+  @Override
+  public boolean handle(ServerPingPacket packet) {
+    if (fullySwitched) {
+      return false;
+    }
+    // Not fully switched, check for client switch confirmation
+    if (packet.getAction() == Short.MAX_VALUE) {
+      fullySwitched = true;
+    }
+    return true;
   }
 
   @Override
@@ -572,6 +592,8 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
       // Required for Legacy Forge
       player.getPhase().onFirstJoin(player);
     } else {
+      fullySwitched = false;
+      player.getConnection().delayedWrite(new ServerPingPacket((byte) 0, Short.MAX_VALUE, false));
       // Clear tab list to avoid duplicate entries
       player.getTabList().clearAll();
 
