@@ -93,7 +93,7 @@ import io.netty.buffer.ByteBuf;
  */
 public interface MinecraftSessionHandler {
 
-  default boolean beforeHandle() {
+  default boolean beforeHandle(Object msg) {
     return false;
   }
 
