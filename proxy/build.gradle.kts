@@ -48,7 +48,6 @@ tasks {
         exclude("it/unimi/dsi/fastutil/ints/*Int2Char*")
         exclude("it/unimi/dsi/fastutil/ints/*Int2Double*")
         exclude("it/unimi/dsi/fastutil/ints/*Int2Float*")
-        exclude("it/unimi/dsi/fastutil/ints/*Int2Int*")
         exclude("it/unimi/dsi/fastutil/ints/*Int2Long*")
         exclude("it/unimi/dsi/fastutil/ints/*Int2Short*")
         exclude("it/unimi/dsi/fastutil/ints/*Int2Reference*")
