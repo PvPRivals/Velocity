@@ -607,6 +607,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
       // Required for Legacy Forge
       player.getPhase().onFirstJoin(player);
     } else {
+      switchConfirmed = false;
       switchConfirmationId = getUnusedPing();
       this.handleClientBoundPing(switchConfirmationId); // Prevent using this again while not accepted
       player.getConnection().delayedWrite(new ServerPingPacket((byte) 0, switchConfirmationId, false));
