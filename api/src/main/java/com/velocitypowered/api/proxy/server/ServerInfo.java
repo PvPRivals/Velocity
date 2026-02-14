@@ -44,13 +44,23 @@ public final class ServerInfo implements Comparable<ServerInfo> {
     this.address = Preconditions.checkNotNull(address, "address");
   }
 
-  public final String getName() {
-    return name;
-  }
+    /**
+     * Gets the name of the server.
+     *
+     * @return the name of the server
+     */
+    public String getName() {
+        return name;
+    }
 
-  public final SocketAddress getAddress() {
-    return address;
-  }
+    /**
+     * Gets the network address of the server.
+     *
+     * @return the {@link SocketAddress} of the server
+     */
+    public SocketAddress getAddress() {
+        return address;
+    }
 
   @Override
   public String toString() {
@@ -61,7 +71,7 @@ public final class ServerInfo implements Comparable<ServerInfo> {
   }
 
   @Override
-  public final boolean equals(@Nullable Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -74,7 +84,7 @@ public final class ServerInfo implements Comparable<ServerInfo> {
   }
 
   @Override
-  public final int hashCode() {
+  public int hashCode() {
     return Objects.hash(name, address);
   }
 
