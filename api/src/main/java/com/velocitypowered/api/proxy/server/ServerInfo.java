@@ -44,23 +44,23 @@ public final class ServerInfo implements Comparable<ServerInfo> {
     this.address = Preconditions.checkNotNull(address, "address");
   }
 
-    /**
-     * Gets the name of the server.
-     *
-     * @return the name of the server
-     */
-    public String getName() {
-        return name;
-    }
+  /**
+   * Gets the name of the server.
+   *
+   * @return the name of the server
+   */
+  public String getName() {
+    return name;
+  }
 
-    /**
-     * Gets the network address of the server.
-     *
-     * @return the {@link SocketAddress} of the server
-     */
-    public SocketAddress getAddress() {
-        return address;
-    }
+  /**
+   * Gets the network address of the server.
+   *
+   * @return the {@link SocketAddress} of the server
+   */
+  public SocketAddress getAddress() {
+    return address;
+  }
 
   @Override
   public String toString() {

@@ -23,6 +23,14 @@ import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.ProtocolUtils.Direction;
 import io.netty.buffer.ByteBuf;
 
+/**
+ * Represents a packet used to confirm a transaction
+ * between the client and the server.
+ *
+ * <p>In Minecraft versions prior to 1.17, this packet was commonly used for
+ * transaction acknowledgments (window confirmations). From 1.17 onwards,
+ * the protocol was simplified to a single integer-based ping/pong mechanism.</p>
+ */
 public class ServerPingPacket implements MinecraftPacket {
 
   private byte windowId;
@@ -32,6 +40,18 @@ public class ServerPingPacket implements MinecraftPacket {
   public ServerPingPacket() {
   }
 
+  /**
+   * Constructs a new {@code ServerPingPacket}.
+   *
+   * <p>Note: The {@code windowId} and {@code accepted} parameters are only utilized
+   * in protocol versions prior to Minecraft 1.17 (where this packet acted as
+   * a Transaction Confirmation). For 1.17 and later, only the {@code action}
+   * (acting as the Ping ID) is used.</p>
+   *
+   * @param windowId the ID of the window being confirmed (pre-1.17)
+   * @param action   the unique action number or ping ID
+   * @param accepted {@code true} if the transaction was accepted, {@code false} otherwise (pre-1.17)
+   */
   public ServerPingPacket(byte windowId, int action, boolean accepted) {
     this.windowId = windowId;
     this.action = action;
