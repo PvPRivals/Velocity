@@ -951,6 +951,12 @@ public enum StateRegistry {
         throw new IllegalArgumentException("At least one mapping must be provided.");
       }
 
+      if (!Boolean.getBoolean("velocity.disable-tablist-processing")) {
+        if (clazz == UpsertPlayerInfoPacket.class || clazz == RemovePlayerInfoPacket.class || clazz == LegacyPlayerListItemPacket.class) {
+          return;
+        }
+      }
+
       for (int i = 0; i < mappings.length; i++) {
         PacketMapping current = mappings[i];
         PacketMapping next = (i + 1 < mappings.length) ? mappings[i + 1] : current;
