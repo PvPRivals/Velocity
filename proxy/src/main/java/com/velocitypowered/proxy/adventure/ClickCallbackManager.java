@@ -21,6 +21,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
 import com.github.benmanes.caffeine.cache.Scheduler;
+import com.velocitypowered.proxy.util.FastRandomUuid;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.kyori.adventure.audience.Audience;
@@ -91,7 +92,7 @@ public class ClickCallbackManager {
       final ClickCallback<Audience> callback,
       final ClickCallback.Options options
   ) {
-    final UUID id = UUID.randomUUID();
+    final UUID id = FastRandomUuid.generate();
     final RegisteredCallback registration = new RegisteredCallback(
         options.lifetime(),
         options.uses(),
