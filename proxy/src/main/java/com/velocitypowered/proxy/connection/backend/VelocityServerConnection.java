@@ -49,6 +49,8 @@ import com.velocitypowered.proxy.server.VelocityRegisteredServer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -101,9 +103,10 @@ public class VelocityServerConnection implements MinecraftConnectionAssociation,
     CompletableFuture<Impl> result = new CompletableFuture<>();
     // Note: we use the event loop for the connection the player is on. This reduces context
     // switches.
-    server.createBootstrap(proxyPlayer.getConnection().eventLoop())
+    SocketAddress destinationAddress = registeredServer.getServerInfo().getSocketAddress();
+    server.createBootstrap(proxyPlayer.getConnection().eventLoop(), destinationAddress)
         .handler(server.getBackendChannelInitializer())
-        .connect(registeredServer.getServerInfo().getAddress())
+        .connect(destinationAddress)
         .addListener((ChannelFutureListener) future -> {
           if (future.isSuccess()) {
             connection = new MinecraftConnection(future.channel(), server);
@@ -144,8 +147,13 @@ public class VelocityServerConnection implements MinecraftConnectionAssociation,
 
   private String createLegacyForwardingAddress() {
     return PlayerDataForwarding.createLegacyForwardingAddress(
-      proxyPlayer.getVirtualHost().orElseGet(() ->
-        registeredServer.getServerInfo().getAddress()).getHostString(),
+            proxyPlayer.getVirtualHost().orElseGet(() -> {
+              SocketAddress address = registeredServer.getServerInfo().getSocketAddress();
+              if (address instanceof InetSocketAddress inetAddr) {
+                return inetAddr;
+              }
+              return InetSocketAddress.createUnresolved("::", 0);
+            }).getHostString(),
       getPlayerRemoteAddressAsString(),
       proxyPlayer.getGameProfile()
     );
@@ -153,8 +161,13 @@ public class VelocityServerConnection implements MinecraftConnectionAssociation,
 
   private String createBungeeGuardForwardingAddress(byte[] forwardingSecret) {
     return PlayerDataForwarding.createBungeeGuardForwardingAddress(
-      proxyPlayer.getVirtualHost().orElseGet(() ->
-        registeredServer.getServerInfo().getAddress()).getHostString(),
+      proxyPlayer.getVirtualHost().orElseGet(() -> {
+        SocketAddress address = registeredServer.getServerInfo().getSocketAddress();
+        if (address instanceof InetSocketAddress inetAddr) {
+          return inetAddr;
+        }
+        return InetSocketAddress.createUnresolved("::", 0);
+      }).getHostString(),
       getPlayerRemoteAddressAsString(),
       proxyPlayer.getGameProfile(),
       forwardingSecret
@@ -167,9 +180,13 @@ public class VelocityServerConnection implements MinecraftConnectionAssociation,
 
     // Initiate the handshake.
     ProtocolVersion protocolVersion = proxyPlayer.getConnection().getProtocolVersion();
-    String playerVhost = proxyPlayer.getVirtualHost()
-                .orElseGet(() -> registeredServer.getServerInfo().getAddress())
-                .getHostString();
+    String playerVhost = proxyPlayer.getVirtualHost().orElseGet(() -> {
+      SocketAddress address = registeredServer.getServerInfo().getSocketAddress();
+      if (address instanceof InetSocketAddress inetAddr) {
+        return inetAddr;
+      }
+      return InetSocketAddress.createUnresolved("::", 0);
+    }).getHostString();
 
     HandshakePacket handshake = new HandshakePacket();
     handshake.setIntent(HandshakeIntent.LOGIN);
@@ -187,9 +204,10 @@ public class VelocityServerConnection implements MinecraftConnectionAssociation,
       handshake.setServerAddress(playerVhost);
     }
 
-    handshake.setPort(proxyPlayer.getVirtualHost()
-            .orElseGet(() -> registeredServer.getServerInfo().getAddress())
-            .getPort());
+    SocketAddress destinationAddr = registeredServer.getServerInfo().getSocketAddress();
+    if (destinationAddr instanceof InetSocketAddress) {
+      handshake.setPort(((InetSocketAddress) destinationAddr).getPort());
+    }
     mc.delayedWrite(handshake);
 
     mc.setProtocolVersion(protocolVersion);
