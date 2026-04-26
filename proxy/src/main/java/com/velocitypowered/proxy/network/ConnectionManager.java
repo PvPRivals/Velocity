@@ -37,6 +37,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.channel.unix.UnixChannelOption;
+import io.netty.util.concurrent.FastThreadLocal;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.MultithreadEventExecutorGroup;
 import java.net.InetSocketAddress;
@@ -69,6 +70,14 @@ public final class ConnectionManager {
   public final BackendChannelInitializerHolder backendChannelInitializer;
 
   private final SeparatePoolInetNameResolver resolver;
+  private final FastThreadLocal<HttpClient> httpClient = new FastThreadLocal<>() {
+    @Override
+    protected HttpClient initialValue() {
+      return HttpClient.newBuilder()
+          .executor(workerGroup)
+          .build();
+    }
+  };
 
   /**
    * Initializes the {@code ConnectionManager}.
@@ -280,11 +289,8 @@ public final class ConnectionManager {
     return this.serverChannelInitializer;
   }
 
-  @SuppressWarnings("checkstyle:MissingJavadocMethod")
-  public HttpClient createHttpClient() {
-    return HttpClient.newBuilder()
-            .executor(this.workerGroup)
-            .build();
+  public HttpClient getHttpClient() {
+    return httpClient.get();
   }
 
   public BackendChannelInitializerHolder getBackendChannelInitializer() {
