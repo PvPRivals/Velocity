@@ -38,6 +38,7 @@ import com.velocitypowered.proxy.protocol.packet.JoinGamePacket;
 import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
 import com.velocitypowered.proxy.protocol.packet.LegacyHandshakePacket;
 import com.velocitypowered.proxy.protocol.packet.LegacyPingPacket;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerAbsorptionPacket;
 import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItemPacket;
 import com.velocitypowered.proxy.protocol.packet.LoginAcknowledgedPacket;
 import com.velocitypowered.proxy.protocol.packet.LoginPluginMessagePacket;
@@ -263,6 +264,10 @@ public interface MinecraftSessionHandler {
   }
 
   default boolean handle(LegacyPlayerListItemPacket packet) {
+    return false;
+  }
+
+  default boolean handle(LegacyPlayerAbsorptionPacket packet) {
     return false;
   }
 

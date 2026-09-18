@@ -74,6 +74,7 @@ import com.velocitypowered.proxy.protocol.packet.HandshakePacket;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooterPacket;
 import com.velocitypowered.proxy.protocol.packet.JoinGamePacket;
 import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerAbsorptionPacket;
 import com.velocitypowered.proxy.protocol.packet.LegacyPlayerListItemPacket;
 import com.velocitypowered.proxy.protocol.packet.LoginAcknowledgedPacket;
 import com.velocitypowered.proxy.protocol.packet.LoginPluginMessagePacket;
@@ -618,6 +619,10 @@ public enum StateRegistry {
           map(0x50, MINECRAFT_1_21_9, true),
           map(0x52, MINECRAFT_26_1, true),
           map(0x54, MINECRAFT_26_3, true));
+      clientbound.register(
+          LegacyPlayerAbsorptionPacket.class,
+          LegacyPlayerAbsorptionPacket::new,
+          map(0x1C, MINECRAFT_1_8, MINECRAFT_1_8, true));
       clientbound.register(
           RemoveResourcePackPacket.class,
           RemoveResourcePackPacket::new,

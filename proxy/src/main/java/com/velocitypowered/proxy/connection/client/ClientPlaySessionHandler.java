@@ -47,6 +47,7 @@ import com.velocitypowered.proxy.protocol.packet.BossBarPacket;
 import com.velocitypowered.proxy.protocol.packet.ClientSettingsPacket;
 import com.velocitypowered.proxy.protocol.packet.JoinGamePacket;
 import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerAbsorptionPacket;
 import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.RespawnPacket;
@@ -661,6 +662,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
       } else {
         this.doFastClientServerSwitch(joinGame);
       }
+      this.resetLegacyAbsorption(joinGame.getEntityId());
     }
 
     destination.setEntityId(joinGame.getEntityId()); // used for sound api
@@ -709,6 +711,15 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
     player.getConnection().flush();
     serverMc.flush();
     destination.completeJoin();
+  }
+
+  private void resetLegacyAbsorption(int entityId) {
+    if (player.getProtocolVersion() != ProtocolVersion.MINECRAFT_1_8) {
+      return;
+    }
+
+    // 1.8 copies metadata on respawn. Clear the old absorption before forwarding destination data.
+    player.getConnection().delayedWrite(new LegacyPlayerAbsorptionPacket(entityId, 0.0F));
   }
 
   private void doFastClientServerSwitch(JoinGamePacket joinGame) {
