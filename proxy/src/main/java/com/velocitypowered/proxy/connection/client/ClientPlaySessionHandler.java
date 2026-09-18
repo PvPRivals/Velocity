@@ -41,13 +41,13 @@ import com.velocitypowered.proxy.connection.backend.VelocityServerConnection;
 import com.velocitypowered.proxy.connection.forge.legacy.LegacyForgeConstants;
 import com.velocitypowered.proxy.connection.player.resourcepack.ResourcePackResponseBundle;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
-import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import com.velocitypowered.proxy.protocol.netty.MinecraftDecoder;
 import com.velocitypowered.proxy.protocol.packet.BossBarPacket;
 import com.velocitypowered.proxy.protocol.packet.ClientSettingsPacket;
 import com.velocitypowered.proxy.protocol.packet.JoinGamePacket;
 import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
+import com.velocitypowered.proxy.protocol.packet.LegacyPlayerAbsorptionPacket;
 import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
 import com.velocitypowered.proxy.protocol.packet.ResourcePackResponsePacket;
 import com.velocitypowered.proxy.protocol.packet.RespawnPacket;
@@ -719,13 +719,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
     }
 
     // 1.8 copies metadata on respawn. Clear the old absorption before forwarding destination data.
-    ByteBuf metadata = Unpooled.buffer(12);
-    ProtocolUtils.writeVarInt(metadata, 0x1c);
-    ProtocolUtils.writeVarInt(metadata, entityId);
-    metadata.writeByte((3 << 5) | 17); // Float metadata at the 1.8 player absorption index.
-    metadata.writeFloat(0.0F);
-    metadata.writeByte(0x7f);
-    player.getConnection().delayedWrite(metadata);
+    player.getConnection().delayedWrite(new LegacyPlayerAbsorptionPacket(entityId, 0.0F));
   }
 
   private void doFastClientServerSwitch(JoinGamePacket joinGame) {
