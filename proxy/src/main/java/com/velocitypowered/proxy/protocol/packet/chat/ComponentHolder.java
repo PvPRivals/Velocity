@@ -244,12 +244,19 @@ public class ComponentHolder {
         JsonObject jsonObject = new JsonObject();
 
         compound.keySet().forEach(key -> {
+          BinaryTag value = compound.get(key);
+          // Player-head hats need JSON booleans; other NBT bytes must remain numeric.
+          if (key.equals("hat") && compound.get("player") != null
+              && value instanceof ByteBinaryTag hat) {
+            jsonObject.addProperty(key, hat.value() != 0);
+            return;
+          }
           // [{"text":"test1"},"test2"] can't be represented as a binary list tag
           // it is represented by a list tag with two compound tags
           // the second compound tag will have an empty key mapped to "test2"
           // without this fix this would lead to an invalid json component:
           // [{"text":"test1"},{"":"test2"}]
-          jsonObject.add(key.isEmpty() ? "text" : key, deserialize(compound.get(key)));
+          jsonObject.add(key.isEmpty() ? "text" : key, deserialize(value));
         });
 
         yield jsonObject;
