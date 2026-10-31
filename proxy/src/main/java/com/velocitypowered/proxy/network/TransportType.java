@@ -33,7 +33,9 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.kqueue.KQueue;
 import io.netty.channel.kqueue.KQueueDatagramChannel;
+import io.netty.channel.kqueue.KQueueDomainSocketChannel;
 import io.netty.channel.kqueue.KQueueIoHandler;
+import io.netty.channel.kqueue.KQueueServerDomainSocketChannel;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioIoHandler;
@@ -76,8 +78,8 @@ public enum TransportType {
   KQUEUE("kqueue", KQueueServerSocketChannel::new,
       KQueueSocketChannel::new,
       KQueueDatagramChannel::new,
-      null,
-      null,
+      KQueueServerDomainSocketChannel::new,
+      KQueueDomainSocketChannel::new,
       KQueueIoHandler::newFactory),
   IO_URING("io_uring", IoUringServerSocketChannel::new,
       IoUringSocketChannel::new,
@@ -125,7 +127,7 @@ public enum TransportType {
     if (address instanceof DomainSocketAddress) {
       if (this.domainServerSocketChannelFactory == null) {
         throw new IllegalArgumentException(
-                "Domain sockets are not available for non-Linux platforms");
+                "Domain sockets are not available for non-Unix platforms");
       }
       return this.domainServerSocketChannelFactory;
     }
@@ -142,7 +144,7 @@ public enum TransportType {
     if (address instanceof DomainSocketAddress) {
       if (this.domainSocketChannelFactory == null) {
         throw new IllegalArgumentException(
-                "Domain sockets are not available for non-Linux platforms");
+                "Domain sockets are not available for non-Unix platforms");
       }
       return this.domainSocketChannelFactory;
     }
