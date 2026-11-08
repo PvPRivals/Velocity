@@ -70,6 +70,7 @@ import com.velocitypowered.proxy.protocol.packet.DialogShowPacket;
 import com.velocitypowered.proxy.protocol.packet.DisconnectPacket;
 import com.velocitypowered.proxy.protocol.packet.EncryptionRequestPacket;
 import com.velocitypowered.proxy.protocol.packet.EncryptionResponsePacket;
+import com.velocitypowered.proxy.protocol.packet.EntityMetadataPacket;
 import com.velocitypowered.proxy.protocol.packet.HandshakePacket;
 import com.velocitypowered.proxy.protocol.packet.HeaderAndFooterPacket;
 import com.velocitypowered.proxy.protocol.packet.JoinGamePacket;
@@ -618,6 +619,18 @@ public enum StateRegistry {
           map(0x50, MINECRAFT_1_21_9, true),
           map(0x52, MINECRAFT_26_1, true),
           map(0x54, MINECRAFT_26_3, true));
+      clientbound.register(
+          EntityMetadataPacket.class,
+          EntityMetadataPacket::new,
+          map(0x1C, MINECRAFT_1_8, true),
+          map(0x39, MINECRAFT_1_9, true),
+          map(0x3B, MINECRAFT_1_12, true),
+          map(0x3C, MINECRAFT_1_12_1, true),
+          map(0x3F, MINECRAFT_1_13, true),
+          map(0x43, MINECRAFT_1_14, true),
+          map(0x44, MINECRAFT_1_15, true),
+          map(0x4D, MINECRAFT_1_17, true),
+          map(0x50, MINECRAFT_1_19_1, MINECRAFT_1_19_1, true));
       clientbound.register(
           RemoveResourcePackPacket.class,
           RemoveResourcePackPacket::new,

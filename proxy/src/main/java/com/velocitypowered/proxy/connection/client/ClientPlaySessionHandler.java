@@ -45,6 +45,7 @@ import com.velocitypowered.proxy.protocol.StateRegistry;
 import com.velocitypowered.proxy.protocol.netty.MinecraftDecoder;
 import com.velocitypowered.proxy.protocol.packet.BossBarPacket;
 import com.velocitypowered.proxy.protocol.packet.ClientSettingsPacket;
+import com.velocitypowered.proxy.protocol.packet.EntityMetadataPacket;
 import com.velocitypowered.proxy.protocol.packet.JoinGamePacket;
 import com.velocitypowered.proxy.protocol.packet.KeepAlivePacket;
 import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
@@ -661,6 +662,7 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
       } else {
         this.doFastClientServerSwitch(joinGame);
       }
+      this.resetAbsorption(joinGame.getEntityId());
     }
 
     destination.setEntityId(joinGame.getEntityId()); // used for sound api
@@ -709,6 +711,39 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
     player.getConnection().flush();
     serverMc.flush();
     destination.completeJoin();
+  }
+
+  private void resetAbsorption(int entityId) {
+    ProtocolVersion version = player.getProtocolVersion();
+    // Before 1.19.3 a client copies all of its player's metadata through a respawn, so the
+    // absorption hearts of the previous server would stay: a new server only sends absorption once
+    // it changes. Later clients only copy it when the respawn asks to, which ours never do.
+    if (version.lessThan(ProtocolVersion.MINECRAFT_1_8)
+        || version.noLessThan(ProtocolVersion.MINECRAFT_1_19_3)) {
+      return;
+    }
+
+    player.getConnection().delayedWrite(new EntityMetadataPacket(entityId,
+        List.of(new EntityMetadataPacket.FloatEntry(playerAbsorptionIndex(version), 0.0F))));
+  }
+
+  /**
+   * Returns where a player's absorption is in its entity metadata. From 1.9 it is the first value
+   * after those of every entity and living entity, which later versions added to.
+   */
+  private static int playerAbsorptionIndex(ProtocolVersion version) {
+    if (version.noLessThan(ProtocolVersion.MINECRAFT_1_17)) {
+      return 15; // Entities got ticks frozen
+    } else if (version.noLessThan(ProtocolVersion.MINECRAFT_1_15)) {
+      return 14; // Living entities got a bee stinger count
+    } else if (version.noLessThan(ProtocolVersion.MINECRAFT_1_14)) {
+      return 13; // Entities got a pose, living entities a sleeping position
+    } else if (version.noLessThan(ProtocolVersion.MINECRAFT_1_10)) {
+      return 11; // Entities got no gravity
+    } else if (version.noLessThan(ProtocolVersion.MINECRAFT_1_9)) {
+      return 10;
+    }
+    return 17;
   }
 
   private void doFastClientServerSwitch(JoinGamePacket joinGame) {
