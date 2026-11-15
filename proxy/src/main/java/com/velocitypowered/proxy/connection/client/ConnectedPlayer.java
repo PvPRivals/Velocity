@@ -69,6 +69,7 @@ import com.velocitypowered.proxy.connection.player.resourcepack.handler.Resource
 import com.velocitypowered.proxy.connection.util.ConnectionMessages;
 import com.velocitypowered.proxy.connection.util.ConnectionRequestResults.Impl;
 import com.velocitypowered.proxy.connection.util.VelocityInboundConnection;
+import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import com.velocitypowered.proxy.protocol.netty.MinecraftEncoder;
 import com.velocitypowered.proxy.protocol.packet.BundleDelimiterPacket;
@@ -88,6 +89,7 @@ import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import com.velocitypowered.proxy.protocol.packet.chat.PlayerChatCompletionPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.builder.ChatBuilderFactory;
 import com.velocitypowered.proxy.protocol.packet.chat.builder.ChatBuilderV2;
+import com.velocitypowered.proxy.protocol.packet.chat.legacy.ChatNewlineSplitter;
 import com.velocitypowered.proxy.protocol.packet.chat.legacy.LegacyChatPacket;
 import com.velocitypowered.proxy.protocol.packet.config.ClientboundServerLinksPacket;
 import com.velocitypowered.proxy.protocol.packet.config.StartUpdatePacket;
@@ -425,8 +427,17 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
     Preconditions.checkNotNull(message, "message");
     final Component translated = translateMessage(message);
 
-    connection.write(getChatBuilderFactory().builder()
-        .component(translated).toClient());
+    MinecraftPacket packet = getChatBuilderFactory().builder().component(translated).toClient();
+    if (getProtocolVersion().lessThan(ProtocolVersion.MINECRAFT_1_8)
+        && packet instanceof LegacyChatPacket chat) {
+      // A 1.7 client draws a newline in chat as a character instead of starting a new line
+      for (String line : ChatNewlineSplitter.split(chat.getMessage())) {
+        connection.delayedWrite(new LegacyChatPacket(line, chat.getType(), chat.getSenderUuid()));
+      }
+      connection.flush();
+      return;
+    }
+    connection.write(packet);
   }
 
   @Override
